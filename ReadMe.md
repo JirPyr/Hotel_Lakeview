@@ -1,142 +1,127 @@
-# HotelLakeview - arkkitehtuurin yleiskuva
+HotelLakeview
 
-## Projektin tavoite
-Tämän projektin tavoitteena on toteuttaa hotellin varausjärjestelmän backend API, jolla voidaan hallita asiakkaita, huoneita, varauksia, raportteja ja myöhemmin myös huonekuvia sekä käyttäjäoikeuksia.
+HotelLakeview on hotellin varausjärjestelmän backend API, joka on toteutettu .NET Web API:na käyttäen modernia arkkitehtuuria ja hyväksi todettuja suunnittelumalleja.
 
-Järjestelmä suunnitellaan niin, että se voidaan myöhemmin julkaista Azureen ja laajentaa tukemaan myös asiakkaiden omaa online-varausta.
+Projektin tavoitteena on tarjota skaalautuva ja laajennettava backend, joka tukee:
 
----
+asiakashallintaa
+huonehallintaa
+varauksia ja saatavuushakua
+hinnoittelulogiikkaa (sesongit)
+myöhemmin autentikointia ja rooleja
+Teknologiat
 
-## Miksi valitsin tämän arkkitehtuurin
-Projektissa käytetään Clean Architecturea, CQRS-mallia, MediatR:ää ja Result Patternia.
+Projektissa käytetyt keskeiset teknologiat:
 
-Valinnan syyt:
-- liiketoimintalogiikka pysyy erillään HTTP-rajapinnasta
-- tietokantatoteutus voidaan vaihtaa myöhemmin ilman suuria muutoksia
-- ratkaisu on helpompi testata
-- rakenne tukee myöhempää Azure-julkaisua
-- järjestelmää voidaan laajentaa vaiheittain
+.NET 10 Web API
+Entity Framework Core
+PostgreSQL (Npgsql)
+Clean Architecture
+CQRS (Command Query Responsibility Segregation)
+MediatR
+FluentValidation
+Result Pattern
+GitHub Actions (CI/CD)
+Arkkitehtuuri
 
----
+Projektissa käytetään Clean Architecturea, jossa vastuut on jaettu selkeästi eri kerroksiin.
 
-## Projektin kerrokset
+Domain
 
-### Domain
-Domain sisältää järjestelmän ydinkäsitteet ja liiketoimintasäännöt.
+Sisältää liiketoiminnan ydinkäsitteet ja säännöt.
 
-Tässä projektissa Domain sisältää esimerkiksi:
-- Customer
-- Room
-- Reservation
-- RoomImage
-- User
-- enumit kuten RoomType, ReservationStatus ja UserRole
+Keskeiset entiteetit:
 
-Domainissa ei ole tietokanta- tai HTTP-logiikkaa.
+Customer
+Room
+Reservation
+RoomImage
+User
 
-### Application
-Application sisältää sovelluksen käyttötapaukset.
+Enumit:
 
-Tähän kerrokseen tulevat:
-- commandit
-- queryt
-- handlerit
-- DTO:t
-- repository-rajapinnat
-- Result Pattern
-- pagination
-- pipeline behaviorit
+RoomType
+ReservationStatus
+UserRole
 
-Application ohjaa mitä järjestelmä tekee, mutta ei tiedä miten data tallennetaan teknisesti.
+Domain ei sisällä tietokanta- tai HTTP-logiikkaa.
 
-### Infrastructure
-Infrastructure sisältää tekniset toteutukset.
+Application
 
-Tähän kerrokseen tulevat:
-- repositoryjen toteutukset
-- aluksi in-memory/mock-repositoryt
-- myöhemmin EF Core + tietokanta
-- tiedostojen tallennus
-- myöhemmin mahdollinen Azure Blob Storage
-- mahdollinen autentikoinnin tekninen toteutus
+Sisältää sovelluksen käyttötapaukset.
 
-### API
+Tähän kerrokseen kuuluvat:
+
+commandit ja queryt
+handlerit (MediatR)
+DTO:t
+repository-rajapinnat
+validointi (FluentValidation)
+Result Pattern
+pagination
+
+Application ohjaa järjestelmän toimintaa, mutta ei tiedä teknisestä toteutuksesta.
+
+Infrastructure
+
+Sisältää tekniset toteutukset.
+
+Tähän kuuluvat:
+
+EF Core DbContext
+PostgreSQL-yhteys
+repositoryjen toteutukset
+seed data
+
+Infrastructure vastaa datan tallennuksesta ja ulkoisista riippuvuuksista.
+
+API
+
 API-kerros vastaanottaa HTTP-pyynnöt.
 
 Controllerien tehtävä:
-- vastaanottaa pyyntö
-- muodostaa command tai query
-- lähettää se MediatR:lle
-- palauttaa tulos HTTP-vastauksena
 
-Controllerit pidetään ohuina, eikä niihin laiteta liiketoimintalogiikkaa.
+vastaanottaa pyyntö
+muodostaa command tai query
+lähettää se MediatR:lle
+palauttaa tulos HTTP-vastauksena
 
----
+Controllerit pidetään ohuina eikä niihin sijoiteta liiketoimintalogiikkaa.
 
-## Miksi aloitin in-memory-repositoryilla
-Projektissa aloitetaan mock/in-memory-repositoryilla, jotta:
-- arkkitehtuuri saadaan rakennettua ensin oikein
-- ydintoiminnot voidaan testata ilman oikeaa tietokantaa
-- toteutus voidaan pitää vaiheittaisena
-- oikea tietokanta voidaan lisätä myöhemmin Infrastructure-kerrokseen ilman suurta refaktorointia
+Pyyntöjen kulku järjestelmässä
 
-Tämä tukee myös Azure-julkaisua, koska tallennusratkaisu pysyy vaihdettavana.
+Järjestelmän perusvirta:
 
----
+HTTP-pyyntö saapuu controllerille
+Controller luo commandin tai queryn
+Pyyntö lähetetään MediatR:lle
+Handler käsittelee pyynnön Application-kerroksessa
+Handler käyttää repository-rajapintaa
+Infrastructure hakee tai tallentaa datan
+Handler palauttaa Result- tai Result<T>-olion
+API palauttaa HTTP-vastauksen
+Tämänhetkinen tila
 
-## Pyyntöjen kulku järjestelmässä
-Järjestelmän perusvirta on seuraava:
+Projektissa on toteutettu:
 
-1. HTTP-pyyntö saapuu controllerille
-2. Controller luo commandin tai queryn
-3. Controller lähettää pyynnön MediatR:lle
-4. Handler käsittelee pyynnön Application-kerroksessa
-5. Handler käyttää repository-rajapintaa
-6. Infrastructure toteuttaa datan haun tai tallennuksen
-7. Handler palauttaa Result- tai Result<T>-olion
-8. API muuntaa tuloksen HTTP-vastaukseksi
+PostgreSQL-tietokanta EF Coren kautta
+kaikki keskeiset repositoryt EF-toteutuksella
+varauslogiikka (sisältäen päällekkäisyyksien eston)
+hinnoittelulogiikka (sesonkihinnoittelu)
+validointi FluentValidationilla
+kattavat yksikkötestit
+health check endpoint (/health)
+CI/CD pipeline GitHub Actionsilla
+Käynnistäminen lokaalisti
+Varmista että PostgreSQL on käynnissä
+Päivitä connection string appsettings.json tiedostoon
+Aja migrationit:
+dotnet ef database update
+Käynnistä sovellus:
+dotnet run --project src/HotelLakeview.Api
+API löytyy osoitteesta:
+http://localhost:5268
 
-Tällä tavalla vastuut pysyvät selkeinä.
+Health check:
 
----
-
-## Tähän mennessä tehdyt ratkaisut
-
-### Domain
-Tähän mennessä on suunniteltu domainin ydinkäsitteet:
-- Customer
-- Room
-- Reservation
-- RoomImage
-- User
-
-Lisäksi on määritelty enumit:
-- RoomType
-- ReservationStatus
-- UserRole
-
-Näillä mallinnetaan hotellin keskeiset liiketoimintakäsitteet.
-
-### Application Common
-Tähän mennessä on valmisteltu:
-- Result
-- Result<T>
-- Error
-- ErrorType
-- PaginationRequest
-- PagedResult<T>
-
-Näiden avulla virheenkäsittely ja listaukset voidaan toteuttaa johdonmukaisesti.
-
----
-
-## Jatkokehityksen suunta
-Seuraavaksi toteutetaan:
-1. repository-rajapinnat
-2. in-memory repositoryt
-3. ensimmäiset commandit ja queryt
-4. controllerit
-5. saatavuushaku ja varauslogiikka
-6. myöhemmin oikea tietokanta
-7. myöhemmin Azure-julkaisu
-8. myöhemmin mahdollinen asiakkaiden online-varaus
+http://localhost:5268/health
