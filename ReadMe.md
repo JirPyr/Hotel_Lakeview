@@ -4,124 +4,164 @@ HotelLakeview on hotellin varausjärjestelmän backend API, joka on toteutettu .
 
 Projektin tavoitteena on tarjota skaalautuva ja laajennettava backend, joka tukee:
 
-asiakashallintaa
-huonehallintaa
-varauksia ja saatavuushakua
-hinnoittelulogiikkaa (sesongit)
-myöhemmin autentikointia ja rooleja
-Teknologiat
+- asiakashallintaa  
+- huonehallintaa  
+- varauksia ja saatavuushakua  
+- hinnoittelulogiikkaa (sesongit)  
+- myöhemmin autentikointia ja rooleja  
+
+---
+
+## Teknologiat
 
 Projektissa käytetyt keskeiset teknologiat:
 
-.NET 10 Web API
-Entity Framework Core
-PostgreSQL (Npgsql)
-Clean Architecture
-CQRS (Command Query Responsibility Segregation)
-MediatR
-FluentValidation
-Result Pattern
-GitHub Actions (CI/CD)
-Arkkitehtuuri
+- .NET 10 Web API  
+- Entity Framework Core  
+- PostgreSQL (Npgsql)  
+- Clean Architecture  
+- CQRS  
+- MediatR  
+- FluentValidation  
+- Result Pattern  
+- GitHub Actions  
+
+---
+
+## Arkkitehtuuri
 
 Projektissa käytetään Clean Architecturea, jossa vastuut on jaettu selkeästi eri kerroksiin.
 
-Domain
+### Domain
 
-Sisältää liiketoiminnan ydinkäsitteet ja säännöt.
+Sisältää liiketoiminnan ydinkäsitteet ja säännöt:
 
-Keskeiset entiteetit:
-
-Customer
-Room
-Reservation
-RoomImage
-User
+- Customer  
+- Room  
+- Reservation  
+- RoomImage  
+- User  
 
 Enumit:
 
-RoomType
-ReservationStatus
-UserRole
+- RoomType  
+- ReservationStatus  
+- UserRole  
 
-Domain ei sisällä tietokanta- tai HTTP-logiikkaa.
+---
 
-Application
+### Application
 
-Sisältää sovelluksen käyttötapaukset.
+Sisältää sovelluksen käyttötapaukset:
 
-Tähän kerrokseen kuuluvat:
+- commandit ja queryt  
+- handlerit  
+- DTO:t  
+- repository-rajapinnat  
+- validointi  
+- Result Pattern  
+- pagination  
 
-commandit ja queryt
-handlerit (MediatR)
-DTO:t
-repository-rajapinnat
-validointi (FluentValidation)
-Result Pattern
-pagination
+---
 
-Application ohjaa järjestelmän toimintaa, mutta ei tiedä teknisestä toteutuksesta.
+### Infrastructure
 
-Infrastructure
+Sisältää tekniset toteutukset:
 
-Sisältää tekniset toteutukset.
+- EF Core DbContext  
+- PostgreSQL  
+- repositoryt  
+- seed data  
 
-Tähän kuuluvat:
+---
 
-EF Core DbContext
-PostgreSQL-yhteys
-repositoryjen toteutukset
-seed data
+### API
 
-Infrastructure vastaa datan tallennuksesta ja ulkoisista riippuvuuksista.
+API-kerros vastaanottaa HTTP-pyynnöt:
 
-API
+- vastaanottaa pyynnön  
+- luo command/query  
+- lähettää MediatR:lle  
+- palauttaa vastauksen  
 
-API-kerros vastaanottaa HTTP-pyynnöt.
+---
 
-Controllerien tehtävä:
+## Pyyntöjen kulku
 
-vastaanottaa pyyntö
-muodostaa command tai query
-lähettää se MediatR:lle
-palauttaa tulos HTTP-vastauksena
+1. HTTP-pyyntö saapuu controllerille  
+2. Controller luo commandin tai queryn  
+3. Pyyntö lähetetään MediatR:lle  
+4. Handler käsittelee pyynnön  
+5. Repository hakee datan  
+6. Tulos palautetaan  
 
-Controllerit pidetään ohuina eikä niihin sijoiteta liiketoimintalogiikkaa.
+---
 
-Pyyntöjen kulku järjestelmässä
-
-Järjestelmän perusvirta:
-
-HTTP-pyyntö saapuu controllerille
-Controller luo commandin tai queryn
-Pyyntö lähetetään MediatR:lle
-Handler käsittelee pyynnön Application-kerroksessa
-Handler käyttää repository-rajapintaa
-Infrastructure hakee tai tallentaa datan
-Handler palauttaa Result- tai Result<T>-olion
-API palauttaa HTTP-vastauksen
-Tämänhetkinen tila
+## Tämänhetkinen tila
 
 Projektissa on toteutettu:
 
-PostgreSQL-tietokanta EF Coren kautta
-kaikki keskeiset repositoryt EF-toteutuksella
-varauslogiikka (sisältäen päällekkäisyyksien eston)
-hinnoittelulogiikka (sesonkihinnoittelu)
-validointi FluentValidationilla
-kattavat yksikkötestit
-health check endpoint (/health)
-CI/CD pipeline GitHub Actionsilla
-Käynnistäminen lokaalisti
-Varmista että PostgreSQL on käynnissä
-Päivitä connection string appsettings.json tiedostoon
-Aja migrationit:
-dotnet ef database update
-Käynnistä sovellus:
+- PostgreSQL EF Coren kautta  
+- repositoryt EF:llä  
+- varauslogiikka (overlap estetty)  
+- hinnoittelu (sesongit)  
+- validointi  
+- testit  
+- health check `/health`  
+- CI/CD GitHub Actionsilla  
+
+---
+
+## Käynnistys lokaalisti
+
+### 1. Vaatimukset
+
+Varmista, että koneellasi on asennettuna:
+
+- .NET SDK (versio 10)
+- PostgreSQL
+
+---
+
+### 2. Kloonaa projekti
+
+
+
+### 3. Asenna riippuvuudet
+dotnet restore
+
+Tämä lataa kaikki tarvittavat NuGet-paketit automaattisesti.
+
+### 4. Aseta tietokantayhteys
+
+Muokkaa tiedostoa:
+
+src/HotelLakeview.Api/appsettings.json
+
+Lisää oma PostgreSQL connection string:
+
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=HotelLakeviewDb;Username=postgres;Password=YOUR_PASSWORD"
+}
+### 5. Luo tietokanta ja taulut
+dotnet ef database update --project src/HotelLakeview.Infrastructure --startup-project src/HotelLakeview.Api
+
+Tämä:
+luo tietokannan
+ajaa migrationit
+luo taulut
+### 6. Käynnistä sovellus
 dotnet run --project src/HotelLakeview.Api
-API löytyy osoitteesta:
+### 7. API käytössä
+
+API löytyy:
+
 http://localhost:5268
 
 Health check:
 
 http://localhost:5268/health
+
+Swagger (jos käytössä):
+
+http://localhost:5268/swagger
