@@ -1,11 +1,13 @@
 using HotelLakeview.Application.DependencyInjection;
 using HotelLakeview.Infrastructure.DependencyInjection;
-using HotelLakeview.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using HotelLakeview.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -13,6 +15,9 @@ builder.Services.AddControllers();
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<HotelLakeviewDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 // Application + Infrastructure
 builder.Services.AddApplication();
@@ -30,14 +35,16 @@ builder.Services
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+var enableSwagger = app.Environment.IsDevelopment() ||
+                    builder.Configuration.GetValue<bool>("Swagger:Enabled");
+
+if (enableSwagger)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 
@@ -45,7 +52,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await HotelLakeviewSeedData.SeedAsync(app.Services);
-
+//await HotelLakeviewSeedData.SeedAsync(app.Services);
 
 app.Run();

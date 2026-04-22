@@ -1,12 +1,18 @@
+# Build output
 bin/
 obj/
-.vs/
-.idea/
-.vscode/
-*.user
-*.suo
-*.db
-*.db-shm
-*.db-wal
-appsettings.Development.json
-.env
+
+# Publish output (tärkeä!)
+publish/
+*.publish/
+
+# Zip deploy packages
+*.zip
+
+# Dotnet publish folders (varmuuden vuoksi kaikki tasot)
+**/publish/
+**/bin/Release/
+**/bin/Debug/
+
+# Logs
+*.log

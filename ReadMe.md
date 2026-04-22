@@ -165,3 +165,5 @@ http://localhost:5268/health
 Swagger (jos käytössä):
 
 http://localhost:5268/swagger
+
+salasana = salasana12345!
