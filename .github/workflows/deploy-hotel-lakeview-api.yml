@@ -1,4 +1,4 @@
-name: Build and deploy HotelLakeview API to Azure Web App
+name: HotelLakeview CI/CD
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  ci:
+    name: Build and test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,13 +21,33 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
+        run: dotnet restore HotelLakeview.sln
+
+      - name: Build solution
+        run: dotnet build HotelLakeview.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test HotelLakeview.sln --configuration Release --no-build --verbosity normal
+
+  cd:
+    name: Publish and deploy
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore API dependencies
         run: dotnet restore ./src/HotelLakeview.Api/HotelLakeview.Api.csproj
 
-      - name: Build
-        run: dotnet build ./src/HotelLakeview.Api/HotelLakeview.Api.csproj --configuration Release --no-restore
-
-      - name: Publish
-        run: dotnet publish ./src/HotelLakeview.Api/HotelLakeview.Api.csproj --configuration Release --no-build --output ./publish
+      - name: Publish API
+        run: dotnet publish ./src/HotelLakeview.Api/HotelLakeview.Api.csproj --configuration Release --no-restore --output ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
