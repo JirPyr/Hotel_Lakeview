@@ -53,7 +53,20 @@ public class InMemoryReservationRepository : IReservationRepository
 
         return Task.FromResult((IReadOnlyCollection<Reservation>)items);
     }
+    public Task<IReadOnlyCollection<Reservation>> GetAllByDateRangeAsync(
+        DateTime startDate,
+        DateTime endDate)
+    {
+        var items = Reservations
+            .Where(r =>
+                r.CheckInDate < endDate &&
+                r.CheckOutDate > startDate)
+            .OrderBy(r => r.CheckInDate)
+            .ToList()
+            .AsReadOnly();
 
+        return Task.FromResult((IReadOnlyCollection<Reservation>)items);
+    }
     public Task<IReadOnlyCollection<Reservation>> GetByRoomIdAsync(int roomId)
     {
         var items = Reservations

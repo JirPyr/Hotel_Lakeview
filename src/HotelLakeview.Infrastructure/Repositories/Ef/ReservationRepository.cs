@@ -78,6 +78,20 @@ public sealed class ReservationRepository : IReservationRepository
             r.CheckInDate < checkOutDate &&
             r.CheckOutDate > checkInDate);
     }
+    public Task<IReadOnlyCollection<Reservation>> GetAllByDateRangeAsync(
+    DateTime startDate,
+    DateTime endDate)
+    {
+        var items = _dbContext.Reservations
+            .Where(r =>
+                r.CheckInDate < endDate &&
+                r.CheckOutDate > startDate)
+            .OrderBy(r => r.CheckInDate)
+            .ToList()
+            .AsReadOnly();
+
+        return Task.FromResult((IReadOnlyCollection<Reservation>)items);
+    }
 
     public async Task<Reservation> AddAsync(Reservation reservation)
     {
@@ -92,4 +106,5 @@ public sealed class ReservationRepository : IReservationRepository
         await _dbContext.SaveChangesAsync();
         return reservation;
     }
+    
 }

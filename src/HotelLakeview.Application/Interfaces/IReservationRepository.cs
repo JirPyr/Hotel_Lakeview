@@ -13,6 +13,7 @@ public interface IReservationRepository
     Task<IReadOnlyCollection<Reservation>> GetByCustomerIdAsync(int customerId);
     Task<IReadOnlyCollection<Reservation>> GetByRoomIdAsync(int roomId);
     Task<IReadOnlyCollection<Reservation>> GetActiveByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<IReadOnlyCollection<Reservation>> GetAllByDateRangeAsync(DateTime startDate, DateTime endDate);
 
     Task<bool> HasOverlappingReservationAsync(
         int roomId,
