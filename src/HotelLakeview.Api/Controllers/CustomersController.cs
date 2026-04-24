@@ -7,6 +7,7 @@ using HotelLakeview.Application.Customers.Queries.GetCustomers;
 using HotelLakeview.Application.Customers.Queries.SearchCustomers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelLakeview.Api.Controllers;
 
@@ -14,6 +15,7 @@ namespace HotelLakeview.Api.Controllers;
 /// Controller asiakkaiden hallintaan.
 /// </summary>
 [ApiController]
+[Authorize (Roles = "Management, Reception")]
 [Route("api/[controller]")]
 public class CustomersController : ControllerBase
 {

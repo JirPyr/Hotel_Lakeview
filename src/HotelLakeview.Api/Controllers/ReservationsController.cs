@@ -6,6 +6,7 @@ using HotelLakeview.Application.Reservations.Queries.GetReservationById;
 using HotelLakeview.Application.Reservations.Queries.GetReservationsPaged;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelLakeview.Api.Controllers;
 
@@ -13,6 +14,7 @@ namespace HotelLakeview.Api.Controllers;
 /// Controller varausten hallintaan.
 /// </summary>
 [ApiController]
+[Authorize(Roles = "Receptionist,Management")]
 [Route("api/[controller]")]
 public sealed class ReservationsController : ControllerBase
 {

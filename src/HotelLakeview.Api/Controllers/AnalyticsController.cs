@@ -3,13 +3,14 @@ using HotelLakeview.Application.Analytics.Queries.GetRevenueReport;
 using HotelLakeview.Application.Analytics.Queries.GetPopularRoomTypesReport;
 using HotelLakeview.Application.Analytics.Queries.GetOccupancyReport;   
 using HotelLakeview.Api.Extensions;
-
+using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelLakeview.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Management")]
 [Route("api/[controller]")]
 public sealed class AnalyticsController : ControllerBase
 {

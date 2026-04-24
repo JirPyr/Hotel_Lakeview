@@ -1,11 +1,13 @@
 using HotelLakeview.Application.Interfaces;
-using HotelLakeview.Domain.Entities;
 using HotelLakeview.Infrastructure.Persistence;
-using HotelLakeview.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using HotelLakeview.Infrastructure.Repositories.Ef;
+using HotelLakeview.Application.Auth.Interfaces;
+using HotelLakeview.Infrastructure.Auth;
+
+
 
 namespace HotelLakeview.Infrastructure.DependencyInjection;
 
@@ -21,12 +23,17 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<HotelLakeviewDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-        // Pidä vielä InMemory käytössä, kunnes EF-repositoryt on toteutettu.
-        //päivitetty EF-repositoryt käyttöön
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
-        services.AddScoped<IReservationRepository, ReservationRepository    >();
+        services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IRoomImageRepository, RoomImageRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        services.Configure<JwtOptions>(
+            configuration.GetSection(JwtOptions.SectionName));
+
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<ITokenService, JwtTokenService>();
 
         return services;
     }
