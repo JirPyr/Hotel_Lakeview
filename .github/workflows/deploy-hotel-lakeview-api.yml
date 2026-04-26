@@ -21,13 +21,13 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore HotelLakeview.slnx
+        run: dotnet restore backend/HotelLakeview.slnx
 
       - name: Build solution
-        run: dotnet build HotelLakeview.slnx --configuration Release --no-restore
+        run: dotnet build backend/HotelLakeview.slnx --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test HotelLakeview.slnx --configuration Release --no-build --verbosity normal
+        run: dotnet test backend/HotelLakeview.slnx --configuration Release --no-build --verbosity normal
 
   cd:
     name: Publish and deploy
