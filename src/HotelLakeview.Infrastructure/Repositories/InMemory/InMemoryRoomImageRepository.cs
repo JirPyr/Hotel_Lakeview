@@ -28,6 +28,17 @@ public class InMemoryRoomImageRepository : IRoomImageRepository
 
         return Task.FromResult((IReadOnlyCollection<RoomImage>)items);
     }
+ public Task<RoomImage> UpdateAsync(RoomImage roomImage)
+    {   
+    var existingIndex = RoomImages.FindIndex(i => i.Id == roomImage.Id);
+
+    if (existingIndex >= 0)
+    {
+        RoomImages[existingIndex] = roomImage;
+    }
+
+    return Task.FromResult(roomImage);
+}
 
     public Task<RoomImage> AddAsync(RoomImage roomImage)
     {

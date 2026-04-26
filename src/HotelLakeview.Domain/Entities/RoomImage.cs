@@ -44,6 +44,7 @@ public class RoomImage
         SortOrder = sortOrder;
         IsPrimary = isPrimary;
         UploadedAtUtc = DateTime.UtcNow;
+        
     }
 
     public int Id { get; private set; }
@@ -54,4 +55,8 @@ public class RoomImage
     public int SortOrder { get; private set; }
     public bool IsPrimary { get; private set; }
     public DateTime UploadedAtUtc { get; private set; }
+    public void SetPrimary(bool isPrimary)
+    {
+        IsPrimary = isPrimary;
+    }
 }

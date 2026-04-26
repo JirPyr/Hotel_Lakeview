@@ -31,6 +31,7 @@ public sealed class RoomImageRepository : IRoomImageRepository
             .ToListAsync();
     }
 
+
     public async Task<RoomImage> AddAsync(RoomImage roomImage)
     {
         await _dbContext.RoomImages.AddAsync(roomImage);
@@ -49,5 +50,12 @@ public sealed class RoomImageRepository : IRoomImageRepository
 
         _dbContext.RoomImages.Remove(image);
         await _dbContext.SaveChangesAsync();
+    }
+    public async Task<RoomImage> UpdateAsync(RoomImage roomImage)
+    {
+        _dbContext.RoomImages.Update(roomImage);
+        await _dbContext.SaveChangesAsync();
+
+        return roomImage;
     }
 }

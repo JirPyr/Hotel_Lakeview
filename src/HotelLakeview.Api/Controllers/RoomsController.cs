@@ -7,6 +7,9 @@ using HotelLakeview.Application.Rooms.Commands.UpdateRoom;
 using HotelLakeview.Application.Rooms.Commands.DeleteRoom;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using HotelLakeview.Application.RoomImages.Commands.UploadRoomImage;
+using HotelLakeview.Application.RoomImages.Queries.GetRoomImages;
+using HotelLakeview.Application.RoomImages.Commands.DeleteRoomImage;
 
 namespace HotelLakeview.Api.Controllers;
 
@@ -124,6 +127,60 @@ public class RoomsController : ControllerBase
     public async Task<IActionResult> DeleteRoom(int id)
     {
         var command = new DeleteRoomCommand(id);
+        var result = await _mediator.Send(command);
+
+        return result.ToActionResult(this);
+    }/// <summary>
+    /// Hakee huoneeseen liitetyt kuvat.
+    /// </summary>
+    /// <param name="roomId">Huoneen tunniste.</param>
+    [HttpGet("{roomId:int}/images")]
+    public async Task<IActionResult> GetRoomImages(int roomId)
+    {
+        var query = new GetRoomImagesQuery(roomId);
+
+        var result = await _mediator.Send(query);
+
+        return result.ToActionResult(this);
+    }
+    /// <summary>
+    /// Lataa uuden kuvan huoneelle.
+    /// </summary>
+    /// <param name="roomId">Huoneen tunniste.</param>
+    /// <param name="file">Ladattava kuvatiedosto.</param>
+    /// <param name="sortOrder">Kuvan järjestysnumero.</param>
+    /// <param name="isPrimary">Kertoo, onko kuva huoneen pääkuva.</param>
+    [HttpPost("{roomId:int}/images")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadRoomImage(
+        int roomId,
+        IFormFile file,
+        [FromForm] int sortOrder = 0,
+        [FromForm] bool isPrimary = false)
+    {
+        await using var stream = file.OpenReadStream();
+
+        var command = new UploadRoomImageCommand(
+            roomId,
+            file.FileName,
+            file.ContentType,
+            stream,
+            sortOrder,
+            isPrimary);
+
+        var result = await _mediator.Send(command);
+
+        return result.ToActionResult(this);
+    }
+    /// <summary>
+    /// Poistaa huonekuvan.
+    /// </summary>
+    /// <param name="imageId">Poistettavan kuvan tunniste.</param>
+    [HttpDelete("images/{imageId:int}")]
+    public async Task<IActionResult> DeleteRoomImage(int imageId)
+    {
+        var command = new DeleteRoomImageCommand(imageId);
+
         var result = await _mediator.Send(command);
 
         return result.ToActionResult(this);

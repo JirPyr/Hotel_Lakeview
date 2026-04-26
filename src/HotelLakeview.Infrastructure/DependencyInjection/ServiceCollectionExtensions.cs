@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using HotelLakeview.Infrastructure.Repositories.Ef;
 using HotelLakeview.Application.Auth.Interfaces;
 using HotelLakeview.Infrastructure.Auth;
+using HotelLakeview.Infrastructure.Storage;
+
 
 
 
@@ -22,7 +24,10 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<HotelLakeviewDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        services.Configure<BlobStorageOptions>(
+            configuration.GetSection(BlobStorageOptions.SectionName));
 
+        services.AddScoped<IFileStorageService, AzureBlobStorageService>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IReservationRepository, ReservationRepository>();
