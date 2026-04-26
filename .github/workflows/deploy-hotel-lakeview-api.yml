@@ -44,10 +44,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore API dependencies
-        run: dotnet restore ./src/HotelLakeview.Api/HotelLakeview.Api.csproj
+        run: dotnet restore ./backend/src/HotelLakeview.Api/HotelLakeview.Api.csproj
 
       - name: Publish API
-        run: dotnet publish ./src/HotelLakeview.Api/HotelLakeview.Api.csproj --configuration Release --no-restore --output ./publish
+        run: dotnet publish ./backend/src/HotelLakeview.Api/HotelLakeview.Api.csproj --configuration Release --no-restore --output ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
