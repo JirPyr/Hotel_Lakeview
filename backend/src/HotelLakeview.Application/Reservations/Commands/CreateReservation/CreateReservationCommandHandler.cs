@@ -40,6 +40,8 @@ public sealed class CreateReservationCommandHandler
         CancellationToken cancellationToken)
     {
         var customer = await _customerRepository.GetByIdAsync(request.CustomerId);
+        var checkInDate = DateTime.SpecifyKind(request.CheckInDate.Date, DateTimeKind.Utc);
+        var checkOutDate = DateTime.SpecifyKind(request.CheckOutDate.Date, DateTimeKind.Utc);
 
         if (customer is null)
         {
@@ -69,8 +71,8 @@ public sealed class CreateReservationCommandHandler
 
         var hasOverlap = await _reservationRepository.HasOverlappingReservationAsync(
             request.RoomId,
-            request.CheckInDate,
-            request.CheckOutDate);
+            checkInDate,
+            checkOutDate);
 
         if (hasOverlap)
         {
@@ -80,14 +82,14 @@ public sealed class CreateReservationCommandHandler
 
         var totalPrice = _pricingService.CalculateTotalPrice(
             room.BasePricePerNight,
-            request.CheckInDate,
-            request.CheckOutDate);
+            checkInDate,
+            checkOutDate);
 
         var reservation = new Reservation(
             request.CustomerId,
             request.RoomId,
-            request.CheckInDate,
-            request.CheckOutDate,
+            checkInDate,
+            checkOutDate,
             request.GuestCount,
             totalPrice,
             request.Notes);

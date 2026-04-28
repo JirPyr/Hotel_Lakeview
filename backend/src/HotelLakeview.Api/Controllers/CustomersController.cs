@@ -15,7 +15,7 @@ namespace HotelLakeview.Api.Controllers;
 /// Controller asiakkaiden hallintaan.
 /// </summary>
 [ApiController]
-[Authorize (Roles = "Management, Reception")]
+[Authorize (Roles = "Management, Receptionist")]
 [Route("api/[controller]")]
 public class CustomersController : ControllerBase
 {

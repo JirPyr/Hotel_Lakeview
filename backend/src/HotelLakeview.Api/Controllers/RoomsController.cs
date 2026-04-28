@@ -10,13 +10,15 @@ using Microsoft.AspNetCore.Mvc;
 using HotelLakeview.Application.RoomImages.Commands.UploadRoomImage;
 using HotelLakeview.Application.RoomImages.Queries.GetRoomImages;
 using HotelLakeview.Application.RoomImages.Commands.DeleteRoomImage;
-
+using HotelLakeview.Application.Reservations.Commands.CreateReservation;
+using Microsoft.AspNetCore.Authorization;
 namespace HotelLakeview.Api.Controllers;
 
 /// <summary>
 /// Huoneisiin liittyvät endpointit.
 /// </summary>
 [ApiController]
+[Authorize (Roles = "Management, Receptionist")]
 [Route("api/[controller]")]
 public class RoomsController : ControllerBase
 {
@@ -30,20 +32,21 @@ public class RoomsController : ControllerBase
     /// <summary>
     /// Hakee vapaat huoneet annetulle aikavälille.
     /// </summary>
-    [HttpGet("available")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+   [HttpGet("available")]
     public async Task<IActionResult> GetAvailableRooms(
         [FromQuery] DateTime checkInDate,
         [FromQuery] DateTime checkOutDate,
         [FromQuery] int guestCount)
     {
+        var utcCheckInDate = DateTime.SpecifyKind(checkInDate.Date, DateTimeKind.Utc);
+        var utcCheckOutDate = DateTime.SpecifyKind(checkOutDate.Date, DateTimeKind.Utc);
+
         var query = new GetAvailableRoomsQuery
-        {
-            CheckInDate = checkInDate,
-            CheckOutDate = checkOutDate,
-            GuestCount = guestCount
-        };
+    {
+        CheckInDate = utcCheckInDate,
+        CheckOutDate = utcCheckOutDate,
+        GuestCount = guestCount
+    };
 
         var result = await _mediator.Send(query);
 
@@ -65,13 +68,16 @@ public class RoomsController : ControllerBase
     /// </summary>
     /// <param name="command">Huoneen luontikomento.</param>
     /// <returns>Luotu huone.</returns>
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> CreateRoom([FromBody] CreateRoomCommand command)
+   [HttpPost]
+    public async Task<IActionResult> CreateReservation([FromBody] CreateReservationCommand command)
     {
-        var result = await _mediator.Send(command);
+        var normalizedCommand = command with
+        {
+            CheckInDate = DateTime.SpecifyKind(command.CheckInDate.Date, DateTimeKind.Utc),
+            CheckOutDate = DateTime.SpecifyKind(command.CheckOutDate.Date, DateTimeKind.Utc)
+        };
+
+        var result = await _mediator.Send(normalizedCommand);
 
         return result.ToActionResult(this);
     }
