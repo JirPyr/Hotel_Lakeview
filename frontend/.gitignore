@@ -1,0 +1,83 @@
+# =========================
+# NODE / NEXT.JS
+# =========================
+node_modules/
+.next/
+out/
+dist/
+
+# =========================
+# ENV (ERITTÄIN TÄRKEÄ)
+# =========================
+.env
+.env.*
+!.env.example
+
+# frontend envit erikseen varmistuksena
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+
+# =========================
+# DOTNET / BACKEND
+# =========================
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/*.suo
+
+# =========================
+# TESTS
+# =========================
+TestResults/
+coverage/
+
+# =========================
+# LOGS
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# EDITORS
+# =========================
+.vs/
+.idea/
+*.code-workspace
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# =========================
+# AZURE / DEPLOY
+# =========================
+.azure/
+.publish/
+*.pubxml
+*.publishsettings
+
+# =========================
+# CACHE / TEMP
+# =========================
+.cache/
+.tmp/
+temp/
+
+# =========================
+# TYPESCRIPT
+# =========================
+*.tsbuildinfo
+next-env.d.ts
+
+# =========================
+# VERCEL (jos joskus käytät)
+# =========================
+.vercel
