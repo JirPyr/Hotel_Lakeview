@@ -38,10 +38,9 @@ jobs:
 
       - name: Prepare standalone package
         run: |
-          rm -rf publish
+          rm -rf publish frontend.zip
           mkdir -p publish
 
-          # TÄRKEÄ: kopioi standalone oikein (sisältää node_modules)
           cp -R frontend/.next/standalone/. publish/
 
           mkdir -p publish/.next
@@ -54,14 +53,22 @@ jobs:
           echo "=== Publish content ==="
           ls -la publish
 
-      - name: Verify Next.js standalone includes dependencies
+      - name: Verify standalone package
         run: |
-          echo "=== Checking next dependency ==="
-          find publish -path "*node_modules/next/package.json" -print
+          test -f publish/server.js
+          test -d publish/node_modules
+          test -f publish/node_modules/next/package.json
+          test -d publish/.next/static
+
+      - name: Zip standalone package
+        run: |
+          cd publish
+          zip -r ../frontend.zip .
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: "Hotel-Lakeview-Frontend"
           publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
-          package: publish
+          package: frontend.zip
+          clean: true
