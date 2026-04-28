@@ -40,11 +40,24 @@ jobs:
         run: |
           rm -rf publish
           mkdir -p publish
-          cp -R frontend/.next/standalone/* publish/
+
+          # TÄRKEÄ: kopioi standalone oikein (sisältää node_modules)
+          cp -R frontend/.next/standalone/. publish/
+
           mkdir -p publish/.next
           cp -R frontend/.next/static publish/.next/static
-          if [ -d frontend/public ]; then cp -R frontend/public publish/public; fi
-          du -sh publish
+
+          if [ -d frontend/public ]; then
+            cp -R frontend/public publish/public
+          fi
+
+          echo "=== Publish content ==="
+          ls -la publish
+
+      - name: Verify Next.js standalone includes dependencies
+        run: |
+          echo "=== Checking next dependency ==="
+          find publish -path "*node_modules/next/package.json" -print
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
