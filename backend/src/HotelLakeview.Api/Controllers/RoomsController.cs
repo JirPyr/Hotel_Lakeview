@@ -1,93 +1,42 @@
 using HotelLakeview.Api.Extensions;
-using HotelLakeview.Application.Rooms.Queries.GetAvailableRooms;
 using HotelLakeview.Application.Rooms.Commands.CreateRoom;
-using HotelLakeview.Application.Rooms.Queries.GetRoomsPaged;
-using HotelLakeview.Application.Rooms.Queries.GetRoomById;
-using HotelLakeview.Application.Rooms.Commands.UpdateRoom;
 using HotelLakeview.Application.Rooms.Commands.DeleteRoom;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
+using HotelLakeview.Application.Rooms.Commands.UpdateRoom;
+using HotelLakeview.Application.Rooms.Queries.GetAvailableRooms;
+using HotelLakeview.Application.Rooms.Queries.GetRoomById;
+using HotelLakeview.Application.Rooms.Queries.GetRoomsPaged;
+using HotelLakeview.Application.RoomImages.Commands.DeleteRoomImage;
 using HotelLakeview.Application.RoomImages.Commands.UploadRoomImage;
 using HotelLakeview.Application.RoomImages.Queries.GetRoomImages;
-using HotelLakeview.Application.RoomImages.Commands.DeleteRoomImage;
-using HotelLakeview.Application.Reservations.Commands.CreateReservation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 namespace HotelLakeview.Api.Controllers;
 
 /// <summary>
 /// Huoneisiin liittyvät endpointit.
 /// </summary>
 [ApiController]
-[Authorize (Roles = "Management, Receptionist")]
+[Authorize(Roles = "Management,Receptionist")]
 [Route("api/[controller]")]
 public class RoomsController : ControllerBase
 {
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// Luo uuden RoomsController-instanssin.
+    /// </summary>
     public RoomsController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     /// <summary>
-    /// Hakee vapaat huoneet annetulle aikavälille.
-    /// </summary>
-   [HttpGet("available")]
-    public async Task<IActionResult> GetAvailableRooms(
-        [FromQuery] DateTime checkInDate,
-        [FromQuery] DateTime checkOutDate,
-        [FromQuery] int guestCount)
-    {
-        var utcCheckInDate = DateTime.SpecifyKind(checkInDate.Date, DateTimeKind.Utc);
-        var utcCheckOutDate = DateTime.SpecifyKind(checkOutDate.Date, DateTimeKind.Utc);
-
-        var query = new GetAvailableRoomsQuery
-    {
-        CheckInDate = utcCheckInDate,
-        CheckOutDate = utcCheckOutDate,
-        GuestCount = guestCount
-    };
-
-        var result = await _mediator.Send(query);
-
-        return result.ToActionResult(this);
-    }
-
-    [HttpGet("{id:int}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetRoomById(int id)
-    {
-        var query = new GetRoomByIdQuery(id);
-        var result = await _mediator.Send(query);
-
-        return result.ToActionResult(this);
-    }
-        /// <summary>
-    /// Luo uuden huoneen.
-    /// </summary>
-    /// <param name="command">Huoneen luontikomento.</param>
-    /// <returns>Luotu huone.</returns>
-   [HttpPost]
-    public async Task<IActionResult> CreateReservation([FromBody] CreateReservationCommand command)
-    {
-        var normalizedCommand = command with
-        {
-            CheckInDate = DateTime.SpecifyKind(command.CheckInDate.Date, DateTimeKind.Utc),
-            CheckOutDate = DateTime.SpecifyKind(command.CheckOutDate.Date, DateTimeKind.Utc)
-        };
-
-        var result = await _mediator.Send(normalizedCommand);
-
-        return result.ToActionResult(this);
-    }
-    /// <summary>
     /// Hakee kaikki huoneet sivutettuna.
     /// </summary>
-    /// <param name="page">Sivunumero.</param>
-    /// <param name="pageSize">Sivukoko.</param>
-    /// <returns>Sivutettu lista huoneista.</returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRooms(
@@ -99,12 +48,66 @@ public class RoomsController : ControllerBase
 
         return result.ToActionResult(this);
     }
+
+    /// <summary>
+    /// Hakee yksittäisen huoneen tunnisteen perusteella.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetRoomById(int id)
+    {
+        var query = new GetRoomByIdQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result.ToActionResult(this);
+    }
+
+    /// <summary>
+    /// Hakee vapaat huoneet annetulle aikavälille ja henkilömäärälle.
+    /// </summary>
+    [HttpGet("available")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAvailableRooms(
+        [FromQuery] DateTime checkInDate,
+        [FromQuery] DateTime checkOutDate,
+        [FromQuery] int guestCount)
+    {
+        var utcCheckInDate = DateTime.SpecifyKind(checkInDate.Date, DateTimeKind.Utc);
+        var utcCheckOutDate = DateTime.SpecifyKind(checkOutDate.Date, DateTimeKind.Utc);
+
+        var query = new GetAvailableRoomsQuery
+        {
+            CheckInDate = utcCheckInDate,
+            CheckOutDate = utcCheckOutDate,
+            GuestCount = guestCount
+        };
+
+        var result = await _mediator.Send(query);
+
+        return result.ToActionResult(this);
+    }
+
+    /// <summary>
+    /// Luo uuden huoneen.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateRoom([FromBody] CreateRoomCommand command)
+    {
+        var result = await _mediator.Send(command);
+
+        return result.ToActionResult(this);
+    }
+
     /// <summary>
     /// Päivittää olemassa olevan huoneen.
     /// </summary>
-    /// <param name="id">Päivitettävän huoneen tunniste.</param>
-    /// <param name="command">Huoneen päivityskomento.</param>
-    /// <returns>Päivitetty huone.</returns>
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -121,11 +124,10 @@ public class RoomsController : ControllerBase
 
         return result.ToActionResult(this);
     }
+
     /// <summary>
     /// Poistaa huoneen käytöstä.
     /// </summary>
-    /// <param name="id">Huoneen tunniste.</param>
-    /// <returns>Tyhjä vastaus, jos poisto onnistui.</returns>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -136,28 +138,31 @@ public class RoomsController : ControllerBase
         var result = await _mediator.Send(command);
 
         return result.ToActionResult(this);
-    }/// <summary>
+    }
+
+    /// <summary>
     /// Hakee huoneeseen liitetyt kuvat.
     /// </summary>
-    /// <param name="roomId">Huoneen tunniste.</param>
     [HttpGet("{roomId:int}/images")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRoomImages(int roomId)
     {
         var query = new GetRoomImagesQuery(roomId);
-
         var result = await _mediator.Send(query);
 
         return result.ToActionResult(this);
     }
+
     /// <summary>
     /// Lataa uuden kuvan huoneelle.
     /// </summary>
-    /// <param name="roomId">Huoneen tunniste.</param>
-    /// <param name="file">Ladattava kuvatiedosto.</param>
-    /// <param name="sortOrder">Kuvan järjestysnumero.</param>
-    /// <param name="isPrimary">Kertoo, onko kuva huoneen pääkuva.</param>
     [HttpPost("{roomId:int}/images")]
     [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UploadRoomImage(
         int roomId,
         IFormFile file,
@@ -178,15 +183,16 @@ public class RoomsController : ControllerBase
 
         return result.ToActionResult(this);
     }
+
     /// <summary>
     /// Poistaa huonekuvan.
     /// </summary>
-    /// <param name="imageId">Poistettavan kuvan tunniste.</param>
     [HttpDelete("images/{imageId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRoomImage(int imageId)
     {
         var command = new DeleteRoomImageCommand(imageId);
-
         var result = await _mediator.Send(command);
 
         return result.ToActionResult(this);
