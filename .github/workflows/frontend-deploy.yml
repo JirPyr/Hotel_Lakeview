@@ -14,10 +14,6 @@ jobs:
     name: Build and deploy frontend
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: frontend
-
     env:
       NEXT_PUBLIC_API_BASE_URL: https://hotel-lakeview-api-cvcqg7cjambfcahw.switzerlandnorth-01.azurewebsites.net/api
 
@@ -33,14 +29,26 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm ci
 
       - name: Build frontend
+        working-directory: frontend
         run: npm run build
+
+      - name: Prepare standalone package
+        run: |
+          rm -rf publish
+          mkdir -p publish
+          cp -R frontend/.next/standalone/* publish/
+          mkdir -p publish/.next
+          cp -R frontend/.next/static publish/.next/static
+          if [ -d frontend/public ]; then cp -R frontend/public publish/public; fi
+          du -sh publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: "Hotel-Lakeview-Frontend"
           publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
-          package: frontend
+          package: publish
