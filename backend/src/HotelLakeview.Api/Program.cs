@@ -69,9 +69,10 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-    "http://localhost:3000",
-    "https://localhost:3000"
-)
+                "http://localhost:3000",
+                "https://localhost:3000",
+                "https://hotel-lakeview-frontend-c7dadugvcjggbcaw.switzerlandnorth-01.azurewebsites.net"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
