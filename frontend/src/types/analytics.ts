@@ -43,3 +43,44 @@ export type PopularRoomTypesReport = {
   totalReservationCount: number;
   roomTypes: PopularRoomType[];
 };
+// Admin näkymä - Asiakkaat ja varaukset
+export type AdminCustomer = {
+  id: number;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  notes?: string;
+};
+
+export type AdminReservation = {
+  id: number;
+  customerId: number;
+  customerName: string;
+  roomId: number;
+  roomNumber: string;
+  checkInDate: string;
+  checkOutDate: string;
+  guestCount: number;
+  notes?: string;
+  status: string;
+};
+
+export type CustomersReport = {
+  items: AdminCustomer[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+};
+
+export type ReservationsReport = {
+  items: AdminReservation[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+};

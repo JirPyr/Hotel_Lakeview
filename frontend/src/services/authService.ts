@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiClient";
+import { isTokenExpired } from "@/utils/tokenUtils";
 import type { LoginRequest, LoginResponse } from "@/types/auth";
 
 const TOKEN_KEY = "hotelLakeviewToken";
@@ -33,9 +34,27 @@ export function getRole() {
 }
 
 export function isLoggedIn() {
-  return Boolean(getToken());
+  const token = getToken();
+  if (!token) {
+    return false;
+  }
+
+  // Tarkista onko token vanhentunut
+  if (isTokenExpired(token)) {
+    logout();
+    return false;
+  }
+
+  return true;
 }
 
 export function isManagement() {
   return getRole() === "Management";
+}
+
+/**
+ * Tarkista onko käyttäjä kirjautunut ja token voimassa
+ */
+export function isValidSession(): boolean {
+  return isLoggedIn();
 }

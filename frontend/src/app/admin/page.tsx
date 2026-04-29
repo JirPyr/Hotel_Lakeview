@@ -7,6 +7,8 @@ import {
   getOccupancyReport,
   getRevenueReport,
   getPopularRoomTypesReport,
+  getAllCustomers,
+  getAllReservations,
 } from "@/services/analyticsService";
 import { createUser, deactivateUser, getUsers } from "@/services/userService";
 
@@ -15,6 +17,10 @@ import type {
   OccupancyReport,
   RevenueReport,
   PopularRoomTypesReport,
+  CustomersReport,
+  ReservationsReport,
+  AdminCustomer,
+  AdminReservation,
 } from "@/types/analytics";
 import type { User, UserRole } from "@/types/user";
 
@@ -73,6 +79,11 @@ export default function AdminPage() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [userError, setUserError] = useState<string | null>(null);
   const [isUserActionLoading, setIsUserActionLoading] = useState(false);
+  const [isCustomersReservationsOpen, setIsCustomersReservationsOpen] =
+  useState(false);
+
+  const [adminCustomers, setAdminCustomers] = useState<AdminCustomer[]>([]);
+  const [adminReservations, setAdminReservations] = useState<AdminReservation[]>([]);
 
   async function loadUsers() {
     const usersResult = await getUsers(1, 20);
@@ -93,20 +104,36 @@ export default function AdminPage() {
         const startDate = formatDate(start);
         const endDate = formatDate(end);
 
-        const [summaryRes, occupancyRes, revenueRes, popularRes, usersRes] =
-          await Promise.all([
-            getReservationSummary(startDate, endDate),
-            getOccupancyReport(startDate, endDate),
-            getRevenueReport(startDate, endDate),
-            getPopularRoomTypesReport(startDate, endDate),
-            getUsers(1, 20),
-          ]);
+        const [
+        summaryRes,
+        occupancyRes,
+        revenueRes,
+        popularRes,
+        usersRes,
+        customersRes,
+        reservationsRes,
+      ] = await Promise.all([
+        getReservationSummary(startDate, endDate),
+        getOccupancyReport(startDate, endDate),
+        getRevenueReport(startDate, endDate),
+        getPopularRoomTypesReport(startDate, endDate),
+        getUsers(1, 20),
+        getAllCustomers(1, 100),
+        getAllReservations(1, 100),
+      ]);
 
         setSummary(summaryRes);
         setOccupancy(occupancyRes);
         setRevenue(revenueRes);
         setPopular(popularRes);
         setUsers(usersRes.items);
+        setAdminCustomers(customersRes.items);
+        setAdminReservations(
+          [...reservationsRes.items].sort(
+            (a, b) =>
+              new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime()
+          )
+        );
       } catch (err) {
         setError(
           err instanceof Error
@@ -346,6 +373,89 @@ export default function AdminPage() {
             </div>
           )}
         </ExpandableSection>
+        <ExpandableSection
+  title="Asiakkaiden ja varausten tarkastelu"
+  isOpen={isCustomersReservationsOpen}
+  onToggle={() =>
+    setIsCustomersReservationsOpen((value) => !value)
+  }
+>
+  {adminCustomers.length === 0 ? (
+    <p className="text-slate-400">Ei asiakkaita.</p>
+  ) : (
+    <div className="space-y-4">
+      {adminCustomers.map((customer) => {
+        const customerReservations = adminReservations.filter(
+          (reservation) => reservation.customerId === customer.id
+        );
+
+        return (
+          <div
+            key={customer.id}
+            className="rounded-xl border border-white/10 bg-slate-800 p-4"
+          >
+            <div className="mb-3">
+              <p className="text-lg font-semibold">{customer.fullName}</p>
+              <p className="text-sm text-slate-400">
+                {customer.email || "Ei sähköpostia"} ·{" "}
+                {customer.phoneNumber || "Ei puhelinnumeroa"}
+              </p>
+
+              {customer.notes && (
+                <p className="mt-1 text-sm text-slate-400">
+                  Lisätiedot: {customer.notes}
+                </p>
+              )}
+            </div>
+
+            {customerReservations.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                Ei varauksia.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {customerReservations.map((reservation) => (
+                  <div
+                    key={reservation.id}
+                    className="rounded-lg bg-slate-900 p-3"
+                  >
+                    <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="font-semibold">
+                          Huone {reservation.roomNumber}
+                        </p>
+                        <p className="text-sm text-slate-400">
+                          {new Date(
+                            reservation.checkInDate
+                          ).toLocaleDateString("fi-FI")}{" "}
+                          -{" "}
+                          {new Date(
+                            reservation.checkOutDate
+                          ).toLocaleDateString("fi-FI")}
+                        </p>
+                      </div>
+
+                      <div className="text-sm text-slate-300 md:text-right">
+                        <p>{reservation.guestCount} henkilöä</p>
+                        <p>Tila: {reservation.status}</p>
+                      </div>
+                    </div>
+
+                    {reservation.notes && (
+                      <p className="mt-2 text-sm text-slate-500">
+                        Lisätiedot: {reservation.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  )}
+</ExpandableSection>
 
         <ExpandableSection
           title="Käyttäjien hallinta"

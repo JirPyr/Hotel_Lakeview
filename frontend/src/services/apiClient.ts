@@ -1,3 +1,5 @@
+import { logout } from "./authService";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function apiRequest<T>(
@@ -23,6 +25,16 @@ export async function apiRequest<T>(
       ...options.headers,
     },
   });
+
+  // 401 Unauthorized - token vanhentunut tai virheellinen
+  if (response.status === 401) {
+    console.warn("Token expired or unauthorized, logging out");
+    if (typeof window !== "undefined") {
+      logout();
+      window.location.href = "/login";
+    }
+    throw new Error("Session expired. Please log in again.");
+  }
 
   if (!response.ok) {
     let message = `API request failed with status ${response.status}`;

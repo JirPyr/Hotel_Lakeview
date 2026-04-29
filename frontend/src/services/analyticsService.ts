@@ -4,8 +4,9 @@ import type {
   PopularRoomTypesReport,
   ReservationSummaryReport,
   RevenueReport,
+  CustomersReport,
+  ReservationsReport,
 } from "@/types/analytics";
-
 export async function getReservationSummary(
   startDate: string,
   endDate: string
@@ -59,5 +60,22 @@ export async function getPopularRoomTypesReport(
 
   return apiRequest<PopularRoomTypesReport>(
     `/Analytics/popular-room-types?${params.toString()}`
+  );
+}
+export async function getAllCustomers(
+  page: number,
+  pageSize: number
+): Promise<CustomersReport> {
+  return apiRequest<CustomersReport>(
+    `/customers?page=${page}&pageSize=${pageSize}`
+  );
+}
+
+export async function getAllReservations(
+  page: number,
+  pageSize: number
+): Promise<ReservationsReport> {
+  return apiRequest<ReservationsReport>(
+    `/reservations?page=${page}&pageSize=${pageSize}`
   );
 }

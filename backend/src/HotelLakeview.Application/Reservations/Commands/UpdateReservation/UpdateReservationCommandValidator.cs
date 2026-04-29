@@ -25,5 +25,10 @@ public sealed class UpdateReservationCommandValidator
         RuleFor(x => x.CheckOutDate)
             .GreaterThan(x => x.CheckInDate)
             .WithMessage("Check-out date must be later than check-in date.");
-    }
+        RuleFor(x => x.CheckInDate)
+            .NotEmpty()
+            .WithMessage("Check-in date is required.")
+            .Must(date => date.Date >= DateTime.UtcNow.Date)
+            .WithMessage("Check-in date cannot be in the past.");
+        }
 }

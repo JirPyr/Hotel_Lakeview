@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getRole, isLoggedIn } from "@/services/authService";
+import { getRole, isLoggedIn, logout } from "@/services/authService";
+import { isTokenExpired } from "@/utils/tokenUtils";
 
 type AuthGuardProps = {
   children: React.ReactNode;
@@ -21,6 +22,17 @@ export default function AuthGuard({
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
+      const token = localStorage.getItem("hotelLakeviewToken");
+
+      // Tarkista token vanheneminen
+      if (token && isTokenExpired(token)) {
+        console.warn("Token expired, logging out");
+        logout();
+        setStatus("redirecting");
+        router.replace("/login");
+        return;
+      }
+
       if (!isLoggedIn()) {
         setStatus("redirecting");
         router.replace("/login");
@@ -49,16 +61,17 @@ export default function AuthGuard({
 
   const message =
     status === "forbidden"
-      ? "Ei oikeuksia admin-näkymään."
-      : status === "redirecting"
-        ? "Ohjataan kirjautumissivulle..."
-        : "Tarkistetaan kirjautumista...";
+      ? "Ei oikeuksia tälle sivulle"
+      : "Tarkistetaan oikeuksia...";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
-      <div className="rounded-2xl bg-white p-6 text-center shadow-lg">
-        <p className="font-semibold text-slate-700">{message}</p>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">{message}</h1>
+        {status === "redirecting" && (
+          <p className="text-gray-600">Ohjataan kirjautumissivulle...</p>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

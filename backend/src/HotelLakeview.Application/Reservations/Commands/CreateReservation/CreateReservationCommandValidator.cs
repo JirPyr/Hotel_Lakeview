@@ -31,5 +31,11 @@ public sealed class CreateReservationCommandValidator : AbstractValidator<Create
         RuleFor(x => x.CheckOutDate)
             .GreaterThan(x => x.CheckInDate)
             .WithMessage("Uloskirjautumispäivän tulee olla sisäänkirjautumispäivän jälkeen.");
+        
+        RuleFor(x => x.CheckInDate)
+            .NotEmpty()
+            .WithMessage("Check-in date is required.")
+            .Must(date => date.Date >= DateTime.UtcNow.Date)
+            .WithMessage("Check-in date cannot be in the past.");
+        }
     }
-}
