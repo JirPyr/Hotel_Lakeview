@@ -1,167 +1,278 @@
-HotelLakeview
+# HotelLakeview
 
-HotelLakeview on hotellin varausjärjestelmän backend API, joka on toteutettu .NET Web API:na käyttäen modernia arkkitehtuuria ja hyväksi todettuja suunnittelumalleja.
+HotelLakeview on hotellin varausjärjestelmä, joka koostuu backend API:sta ja modernista frontend-sovelluksesta.
 
-Projektin tavoitteena on tarjota skaalautuva ja laajennettava backend, joka tukee:
+Järjestelmä on toteutettu käyttäen Clean Architecturea ja moderneja web-teknologioita.
 
-- asiakashallintaa  
-- huonehallintaa  
-- varauksia ja saatavuushakua  
-- hinnoittelulogiikkaa (sesongit)  
-- myöhemmin autentikointia ja rooleja  
+---
+
+## Projektin tavoite
+
+Projektin tavoitteena on tarjota skaalautuva ja laajennettava ratkaisu, joka tukee:
+
+- asiakashallintaa
+- huonehallintaa
+- varauksia ja saatavuushakua
+- hinnoittelulogiikkaa (sesongit)
+- raportointia ja analytiikkaa
+- autentikointia ja rooleja
+- selainpohjaista käyttöliittymää
 
 ---
 
 ## Teknologiat
 
-Projektissa käytetyt keskeiset teknologiat:
+### Backend
 
-- .NET 10 Web API  
-- Entity Framework Core  
-- PostgreSQL (Npgsql)  
-- Clean Architecture  
-- CQRS  
-- MediatR  
-- FluentValidation  
-- Result Pattern  
-- GitHub Actions  
+- .NET 10 Web API
+- Entity Framework Core
+- PostgreSQL (Npgsql)
+- Clean Architecture
+- CQRS
+- MediatR
+- FluentValidation
+- Result Pattern
+
+### Frontend
+
+- Next.js (App Router)
+- TypeScript
+- React
+- Tailwind CSS
+
+### Pilvi ja DevOps
+
+- Azure App Service
+- Azure Blob Storage (kuvat)
+- GitHub Actions (CI/CD)
 
 ---
 
 ## Arkkitehtuuri
 
-Projektissa käytetään Clean Architecturea, jossa vastuut on jaettu selkeästi eri kerroksiin.
+```text
+
+Frontend (Next.js)
+        ↓
+API (Controllers)
+        ↓
+Application (CQRS + MediatR)
+        ↓
+Domain (Business logic)
+        ↓
+Infrastructure (EF Core, PostgreSQL, Azure)
+## Backend
 
 ### Domain
 
 Sisältää liiketoiminnan ydinkäsitteet ja säännöt:
 
-- Customer  
-- Room  
-- Reservation  
-- RoomImage  
-- User  
+- Customer
+- Room
+- Reservation
+- RoomImage
+- User
 
-Enumit:
+#### Enumit
 
-- RoomType  
-- ReservationStatus  
-- UserRole  
+- RoomType
+- ReservationStatus
+- UserRole
 
 ---
 
 ### Application
 
-Sisältää sovelluksen käyttötapaukset:
+Sisältää:
 
-- commandit ja queryt  
-- handlerit  
-- DTO:t  
-- repository-rajapinnat  
-- validointi  
-- Result Pattern  
-- pagination  
+- commandit ja queryt
+- handlerit
+- DTO:t
+- validointi
+- Result Pattern
+- pagination
 
 ---
 
 ### Infrastructure
 
-Sisältää tekniset toteutukset:
+Sisältää:
 
-- EF Core DbContext  
-- PostgreSQL  
-- repositoryt  
-- seed data  
+- EF Core DbContext
+- PostgreSQL
+- repositoryt
+- seed data
 
 ---
 
 ### API
 
-API-kerros vastaanottaa HTTP-pyynnöt:
+- vastaanottaa HTTP-pyynnöt
+- käyttää MediatR:ia
+- palauttaa tulokset
 
-- vastaanottaa pyynnön  
-- luo command/query  
-- lähettää MediatR:lle  
-- palauttaa vastauksen  
+---
+
+## Frontend
+
+Frontend on toteutettu Next.js:llä ja tarjoaa käyttöliittymän hotellin hallintaan.
+
+### Keskeiset näkymät
+
+- Etusivu
+- Huoneiden selaus
+- Varauskalenteri
+- Varausten hallinta
+- Admin-näkymä
+
+---
+
+### Toiminnallisuudet
+
+- vapaat huoneet aikavälille
+- varauksen luonti käyttöliittymästä
+- varauksen muokkaus ja peruminen
+- kalenterinäkymä varaustilanteelle
+- käyttäjähallinta admin-paneelissa
+
+#### Raportit
+
+- revenue
+- käyttöaste
+- suosituimmat huoneet
+
+---
+
+### Admin-näkymä
+
+Admin-paneelissa voidaan:
+
+- tarkastella raportteja
+- hallita käyttäjiä
+- tarkastella asiakkaita ja varauksia
+- nähdä varaukset asiakaskohtaisesti
+- järjestää varaukset aikajärjestykseen
+
+---
+
+## Autentikointi
+
+- JWT-pohjainen kirjautuminen
+- AuthGuard suojaa näkymät
+- roolipohjainen pääsynhallinta
 
 ---
 
 ## Pyyntöjen kulku
 
-1. HTTP-pyyntö saapuu controllerille  
-2. Controller luo commandin tai queryn  
-3. Pyyntö lähetetään MediatR:lle  
-4. Handler käsittelee pyynnön  
-5. Repository hakee datan  
-6. Tulos palautetaan  
+1. Käyttäjä tekee toiminnon frontendissä
+2. Frontend kutsuu API:a
+3. API ohjaa pyynnön MediatR:lle
+4. Handler käsittelee logiikan
+5. Tulos palautetaan frontendille
+6. UI päivittyy
 
 ---
 
-## Tämänhetkinen tila
+## Toteutetut ominaisuudet
 
-Projektissa on toteutettu:
+### Asiakashallinta
 
-- PostgreSQL EF Coren kautta  
-- repositoryt EF:llä  
-- varauslogiikka (overlap estetty)  
-- hinnoittelu (sesongit)  
-- validointi  
-- testit  
-- health check `/health`  
-- CI/CD GitHub Actionsilla  
+- luonti, haku, päivitys
+- hakutoiminto
+- deaktivointi
+
+---
+
+### Huonehallinta
+
+- CRUD
+- huonetyypit
+- kapasiteetti ja hinnoittelu
+
+---
+
+### Varausjärjestelmä
+
+- luonti, muokkaus, peruminen
+- päällekkäisten varausten esto
+- saatavuushaku
+
+---
+
+### Hinnoittelu
+
+- automaattinen laskenta
+- sesonkihinnoittelu
+
+---
+
+### Raportointi
+
+- käyttöaste
+- revenue
+- varausyhteenveto
+
+---
+
+### Tietoturva
+
+- käyttäjät ja roolit
+- JWT
+- suojatut endpointit
+
+---
+
+## Testaus
+
+- yksikkötestit liiketoimintalogiikalle
+- handler-testit
+- virhetilanteiden testaus
+
+---
+
+## CI/CD
+
+- GitHub Actions pipeline
+- automaattinen build ja deploy Azureen
 
 ---
 
 ## Käynnistys lokaalisti
 
-### 1. Vaatimukset
+### Backend
 
-Varmista, että koneellasi on asennettuna:
-
-- .NET SDK (versio 10)
-- PostgreSQL
-
----
-
-### 2. Kloonaa projekti
-
-
-
-### 3. Asenna riippuvuudet
 dotnet restore
 
-Tämä lataa kaikki tarvittavat NuGet-paketit automaattisesti.
-
-### 4. Aseta tietokantayhteys
-
-Muokkaa tiedostoa:
-
-src/HotelLakeview.Api/appsettings.json
-
-Lisää oma PostgreSQL connection string:
-
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Port=5432;Database=HotelLakeviewDb;Username=postgres;Password=YOUR_PASSWORD"
-}
-### 5. Luo tietokanta ja taulut
 dotnet ef database update --project src/HotelLakeview.Infrastructure --startup-project src/HotelLakeview.Api
 
-Tämä:
-luo tietokannan
-ajaa migrationit
-luo taulut
-### 6. Käynnistä sovellus
 dotnet run --project src/HotelLakeview.Api
-### 7. API käytössä
 
-API löytyy:
+### Frontend
 
+cd frontend
+
+npm install
+
+npm run dev
+
+Frontend löytyy:
+http://localhost:3000
+
+## API
+
+### Backend
 http://localhost:5268
 
-Health check:
-
+### Health check
 http://localhost:5268/health
 
-Swagger (jos käytössä):
-
+### Swagger
 http://localhost:5268/swagger
+
+## Jatkokehitys
+- online-varaus asiakkaille
+- maksujärjestelmä
+- caching (Redis)
+- reaaliaikainen data
+- laajempi analytiikkas
